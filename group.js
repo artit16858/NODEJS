@@ -17,7 +17,7 @@ main_();
 
 
 setInterval((function () {
-    
+
     if (isExit == false) {
         console.log('I\'m Batman!');
         isExit = true;
@@ -60,9 +60,11 @@ function main_() {
     var date1 = "";
     var date2 = "";
     var employee = db.ref("employee/");
+    var employee_owner = db.ref("employee/");
     var employee_team = db.ref("employee/");
     var customerData = db.ref("event_customer/");
-
+    var notification = db.ref("notifications/");
+   
     employee.on("value", function (emp) {
 
         emp.forEach(function (emp_list) {
@@ -204,5 +206,61 @@ function main_() {
 
 
 
+    });
+    notification.on("value", function (not) {
+        var not_late = 0;
+        not.forEach(function (not_list) {
+            if (not_list.val().seen == "0" && sumday(not_list.val().z_status_latest_date_full) < set3) {
+                not_late++;
+            }
+      
+        console.log("emp", not_list.val().emp_username + "  not_late " + not_late);
+        if (not_late > 0) {
+            employee_owner.on("value", function (emp_) {
+                emp_.forEach(function (emp_list_) {
+
+                    if (emp_list_.val().employee_type_id == "เจ้าของบริษัท") {
+                        var registrationToken_o = emp_list_.val().employee_tokenID;
+                        var message = {
+                            to: registrationToken_o,
+                            notification: {
+                                title: 'คุณ' + not_list.val().emp_username,
+                                body: 'ไม่เปิดอ่านการแจ้งเตื่อนเกินเวลาที่กำหนด',
+                                sound: "default",
+                                click_action: "FCM_PLUGIN_ACTIVITY",
+                                icon: "fcm_push_icon"
+                            },
+
+                            data: {  //you can send only notification or only data(or include both)
+                                cus_key: emp_list_.val().notifications_key,
+                                type: "late_owner",
+                                // index: "",
+                                emp_name: emp_list_.val().employee_username,
+                                //  cus_name: cus_list.key
+                            }
+                        };
+
+
+                        if (date1 == "" || date1 != date_now) {
+                            fcm.send(message, function (err, response) {
+                                if (err) {
+                                    console.log("Something has gone wrong!");
+
+                                } else {
+                                    console.log("Successfully sent with response: ", response);
+                                    date1 = date_now;
+
+                                }
+                            });
+                        } else if (date1 == date_now) {
+                            //process.exit(-1);
+                        }
+
+                    }
+                })
+            })
+
+        }
+    });
     });
 }
