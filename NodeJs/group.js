@@ -1,7 +1,9 @@
 var admin = require("firebase-admin");
 var FCM = require('fcm-node');
 
-var serviceAccount = require("C:/Users/Revel Soft 03/Documents/GitHub/NODEJS/usabai3.json");
+//var serviceAccount = require("C:/Users/Revel Soft 03/Documents/GitHub/NODEJS/usabai3.json");
+var serviceAccount = require("C:/Users/Maxky_2208/Documents/GitHub/NODEJS/NodeJs/usabai3.json");
+
 /* var database = firebase.database(); */
 
 var fcm = new FCM(serviceAccount);
@@ -20,7 +22,7 @@ admin.initializeApp({
 // As an admin, the app has access to read and write all data, regardless of Security Rules
 var count;
 var isExit = false;
-main_2();
+main_();
 
 
 setInterval((function () {
@@ -80,7 +82,7 @@ function main_() {
         //console.log("ss",set3)
         not.forEach(function (not_list) {
           //  console.log(sumday(not_list.val().notifications_full_time))
-            if (not_list.val().seen == "0" && sumday(not_list.val().notifications_full_time) < set3) {
+            if (not_list.val().seen == "0" && diffDays2(not_list.val().notifications_time) < set3) {
                 not_late++;
             }
 
@@ -146,11 +148,11 @@ function main_() {
             //วน ลูกค้าของพนักงานแต่ละรอบ(หาลูกค้าที่ใกล้เกินกำหนดการแจ้งเตือน)
             customerData.on("value", function (cus) {
                 cus.forEach(function (cus_list) {
-                    if (cus_list.val().employee_username == emp_list.val().employee_username && sumday(cus_list.val().z_status_latest_date_full) < (set1 - set2)) {
+                    if (cus_list.val().employee_username == emp_list.val().employee_username && diffDays2(cus_list.val().z_status_latest_date) < (set1 - set2)) {
                         ok++;
-                    } else if (cus_list.val().employee_username == emp_list.val().employee_username && sumday(cus_list.val().z_status_latest_date_full) < set1) {
+                    } else if (cus_list.val().employee_username == emp_list.val().employee_username && diffDays2(cus_list.val().z_status_latest_date) < set1) {
                         near++;
-                    } else if (cus_list.val().employee_username == emp_list.val().employee_username && sumday(cus_list.val().z_status_latest_date_full) > set1) {
+                    } else if (cus_list.val().employee_username == emp_list.val().employee_username && diffDays2(cus_list.val().z_status_latest_date) > set1) {
                         late++;
                     }
 
@@ -346,7 +348,7 @@ function Notification_Appoint() {
     var reservation = db.ref("notifications-reservation/");
 }
 
-function diffDays(date_input) {
+function   diffDays(date_input) {
     var date = new Date();
     var date_format = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
     var date_now = new Date(date_format);
@@ -354,7 +356,7 @@ function diffDays(date_input) {
     var timeDiff = Math.abs(date_now.getTime() - date.getTime());
     var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
     return diffDays;
-}
+  }
 function sumday(date_b) {
     var date_now = new Date();
     var date = new Date(date_b)
@@ -362,3 +364,15 @@ function sumday(date_b) {
     var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
     return diffDays;
 }
+
+function diffDays2(date_b) {
+    let date_get = date_b;
+    let sub_date = date_get.substring(3, 5) + '-' + date_get.substring(0, 2) + '-' + date_get.substring(6, 10);
+    var date_now = new Date();
+    var date_format = date_now.getFullYear() + '-' + ('0' + (date_now.getMonth() + 1)).slice(-2) + '-' + ('0' + date_now.getDate()).slice(-2);
+    var date_now_ = new Date(date_format);
+    var date_base = new Date(sub_date);
+    var timeDiff = Math.abs(date_now_.getTime() - date_base.getTime());
+    var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return diffDays;
+  }
